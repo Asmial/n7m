@@ -1,4 +1,4 @@
-FROM postgis/postgis:15-3.4-alpine
+FROM ghcr.io/baosystems/postgis:15
 
 # Faster imports with PostgreSQL 15
 # https://osm2pgsql.org/news/2023/01/22/faster-with-postgresql15.html

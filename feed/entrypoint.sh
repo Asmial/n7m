@@ -3,7 +3,7 @@
 set -e
 
 # Export this for the Nominatim CLI
-export NOMINATIM_DATABASE_DSN="pgsql:dbname=nominatim;host=$PGHOST;user=$PGUSER;password=$PGPASSWORD"
+export NOMINATIM_DATABASE_DSN="pgsql:dbname=$PGDATABASE;host=$PGHOST;user=$PGUSER;password=$PGPASSWORD"
 export PROCESSING_UNITS=$(nproc)
 
 function waitForGis() {
@@ -53,14 +53,20 @@ if [ "$1" = 'setup' ]; then
     echo "Database has not been setup"
   fi
 
-  OSM_PATH=/data/$OSM_FILENAME
+  for OSM_AREA in $OSM_AREAS;
+  do
+    OSM_FILENAME="$OSM_AREA.osm.pbf"
 
-  if [ -s ${OSM_PATH} ]; then
-    echo "$OSM_PATH exists."
-  else
-    echo "Database $OSM_PATH does not exist.  Please specify variable 'OSM_FILENAME'  Exiting."
-    exit 1
-  fi
+    OSM_PATH=/data/$OSM_FILENAME
+
+    if [ -s ${OSM_PATH} ]; then
+      echo "$OSM_PATH exists."
+    else
+      echo "Database $OSM_PATH does not exist.  Please specify variable 'OSM_FILENAME'  Exiting."
+      exit 1
+    fi
+
+  done
 
   # create required users that the tool checks
   createuser www-data
@@ -68,13 +74,20 @@ if [ "$1" = 'setup' ]; then
   echo "Starting Import"
   echo "Number of processing units: $PROCESSING_UNITS"
 
-  # time the import so we can compare database configuration
-  time nominatim import $NOMINATIM_IMPORT_FLAGS --osm-file /data/$OSM_FILENAME --project-dir /data --threads $PROCESSING_UNITS
-  if [ $? != 0 ]; then
-    echo "Import failed"
-    exit 1
-  fi
-  echo "Import complete"
+  for OSM_AREA in $OSM_AREAS;
+  do
+    OSM_FILENAME="$OSM_AREA.osm.pbf"
+    
+    OSM_PATH=/data/$OSM_FILENAME
+
+    # time the import so we can compare database configuration
+    time nominatim import $NOMINATIM_IMPORT_FLAGS --osm-file /data/$OSM_FILENAME --project-dir /data --threads $PROCESSING_UNITS
+    if [ $? != 0 ]; then
+      echo "Import failed: $OSM_AREA"
+      exit 1
+    fi
+    echo "Import complete: $OSM_AREA"
+  done
 
   exit 0
 fi
@@ -94,7 +107,20 @@ if [ "$1" = 'update' ]; then
   echo "Number of processing units: $PROCESSING_UNITS"
 
   nominatim replication --init
-  exec nominatim replication --once --threads $PROCESSING_UNITS
+
+  for OSM_AREA in $OSM_AREAS;
+  do
+    OSM_FILENAME="$OSM_AREA.osm.pbf"
+    
+    OSM_PATH=/data/$OSM_FILENAME
+
+    NOMINATIM_REPLICATION_URL=https://download.geofabrik.de/$OSM_AREA-updates
+
+    # time the import so we can compare database configuration
+    time nominatim import $NOMINATIM_IMPORT_FLAGS --osm-file /data/$OSM_FILENAME --project-dir /data --threads $PROCESSING_UNITS
+    exec nominatim replication --once --threads $PROCESSING_UNITS
+  done
+
 fi
 
 if [ "$1" = 'replication' ]; then
