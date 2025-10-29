@@ -1,3 +1,4 @@
 *.pbf
 data/
 pgdata/
+.env

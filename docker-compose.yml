@@ -1,4 +1,20 @@
 services:
+  download:
+    build: download
+    image: asmial/n7m-download
+    environment:
+      - OSM_AREAS=$OSM_AREAS
+      - PGHOST=gis
+      - PGDATABASE=$POSTGRES_DATABASE
+      - PGUSER=$POSTGRES_USER
+      - PGPASSWORD=$POSTGRES_PASSWORD
+    volumes:
+      - ./data:/tileset
+    healthcheck:
+      test: "/scripts/test.sh"
+      interval: 1s
+      timeout: 5s
+      retries: 3600
   web:
     build: web
     image: smithmicro/n7m-web
@@ -19,7 +35,10 @@ services:
     image: smithmicro/n7m-api
     restart: always
     environment:
-      - PGPASSWORD=n7m-geocoding
+      - PGHOST=gis
+      - PGDATABASE=$POSTGRES_DATABASE
+      - PGUSER=$POSTGRES_USER
+      - PGPASSWORD=$POSTGRES_PASSWORD
       - WEB_CONCURRENCY=2
     depends_on:
       - gis
@@ -28,22 +47,28 @@ services:
     build: feed
     image: smithmicro/n7m-feed
     depends_on:
-      - gis
+      gis:
+        condition: service_started
     environment:
-      - PGPASSWORD=n7m-geocoding
-      - OSM_FILENAME=monaco-latest.osm.pbf
-      - NOMINATIM_REPLICATION_URL=https://download.geofabrik.de/europe/monaco-updates
+      - PGHOST=gis
+      - PGDATABASE=$POSTGRES_DATABASE
+      - PGUSER=$POSTGRES_USER
+      - PGPASSWORD=$POSTGRES_PASSWORD
       - NOMINATIM_REPLICATION_MAX_DIFF=3000
       - NOMINATIM_REPLICATION_UPDATE_INTERVAL=86400
+      - OSM_AREAS=$OSM_AREAS
     volumes:
       - ./data:/data/
   gis:
     build: gis
     image: smithmicro/n7m-gis
     restart: always
-    ports:
-      - "5432:5432"
+    depends_on:
+      download:
+        condition: service_healthy
     environment:
+      - PGDPOSTGRES_DATABASE=$POSTGRES_DATABASE
+      - POSTGRES_USER=$POSTGRES_USER
       - POSTGRES_PASSWORD=n7m-geocoding
     volumes:
       - ./pgdata:/var/lib/postgresql/data
