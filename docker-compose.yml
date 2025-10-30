@@ -9,7 +9,7 @@ services:
       - PGUSER=$POSTGRES_USER
       - PGPASSWORD=$POSTGRES_PASSWORD
     volumes:
-      - ./data:/tileset
+      - data:/tileset
     healthcheck:
       test: "/scripts/test.sh"
       interval: 1s
@@ -56,7 +56,7 @@ services:
       - NOMINATIM_REPLICATION_UPDATE_INTERVAL=86400
       - OSM_AREAS=$OSM_AREAS
     volumes:
-      - ./data:/data/
+      - data:/data/
   gis:
     build: gis
     image: smithmicro/n7m-gis
@@ -69,4 +69,8 @@ services:
       - POSTGRES_USER=$POSTGRES_USER
       - POSTGRES_PASSWORD=n7m-geocoding
     volumes:
-      - ./pgdata:/var/lib/postgresql/data
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
+  data:
