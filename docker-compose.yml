@@ -65,7 +65,7 @@ services:
       download:
         condition: service_healthy
     environment:
-      - PGDPOSTGRES_DATABASE=$POSTGRES_DATABASE
+      - POSTGRES_DATABASE=$POSTGRES_DATABASE
       - POSTGRES_USER=$POSTGRES_USER
       - POSTGRES_PASSWORD=n7m-geocoding
     volumes:
