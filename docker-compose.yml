@@ -67,7 +67,7 @@ services:
     environment:
       - POSTGRES_DATABASE=$POSTGRES_DATABASE
       - POSTGRES_USER=$POSTGRES_USER
-      - POSTGRES_PASSWORD=n7m-geocoding
+      - POSTGRES_PASSWORD=$POSTGRES_PASSWORD
     volumes:
       - pgdata:/var/lib/postgresql/data
 
