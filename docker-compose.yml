@@ -19,8 +19,6 @@ services:
     build: web
     image: smithmicro/n7m-web
     restart: always
-    ports:
-      - "8080:80"
     depends_on:
       - api
       - ui
