@@ -5,9 +5,6 @@ services:
     environment:
       - OSM_AREAS=$OSM_AREAS
       - PGHOST=gis
-      - PGDATABASE=$POSTGRES_DATABASE
-      - PGUSER=$POSTGRES_USER
-      - PGPASSWORD=$POSTGRES_PASSWORD
     volumes:
       - data:/tileset
     healthcheck:
