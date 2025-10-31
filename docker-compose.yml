@@ -2,6 +2,7 @@ services:
   download:
     build: download
     image: asmial/n7m-download
+    restart: no
     environment:
       - OSM_AREAS=$OSM_AREAS
       - PGHOST=gis
@@ -41,6 +42,7 @@ services:
   feed:
     build: feed
     image: smithmicro/n7m-feed
+    restart: no
     depends_on:
       gis:
         condition: service_started
