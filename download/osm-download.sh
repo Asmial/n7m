@@ -9,8 +9,6 @@ do
     fi
 done
 
-/scripts/download.sh --wiki --grid
-
 curl "$PGHOST:5432" > /dev/null 2>&1
 
 while [[ $? != '52' ]]
