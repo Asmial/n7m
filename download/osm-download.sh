@@ -2,11 +2,14 @@
 
 for OSM_AREA in $OSM_AREAS;
 do
-    download-osm $OSM_AREA -o "$OSM_AREA.osm.pbf"
+    FILENAME="$OSM_AREA.osm.pbf"
+
+    if [[ -e "$FILENAME.aria2" || ! -e $FILENAME ]]; then
+        download-osm $OSM_AREA -o "$OSM_AREA.osm.pbf"
+    fi
 done
 
-export NOMINATIM_DATABASE_DSN="pgsql:dbname=$PGDATABASE;host=$PGHOST;user=$PGUSER;password=$PGPASSWORD"
-
+/scripts/download.sh --wiki --grid
 
 curl "$PGHOST:5432" > /dev/null 2>&1
 
